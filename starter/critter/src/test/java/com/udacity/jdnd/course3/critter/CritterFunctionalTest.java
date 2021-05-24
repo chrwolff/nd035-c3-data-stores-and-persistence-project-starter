@@ -2,12 +2,16 @@ package com.udacity.jdnd.course3.critter;
 
 import com.google.common.collect.Lists;
 import com.google.common.collect.Sets;
-import com.udacity.jdnd.course3.critter.pet.PetController;
-import com.udacity.jdnd.course3.critter.pet.PetDTO;
 import com.udacity.jdnd.course3.critter.pet.PetType;
-import com.udacity.jdnd.course3.critter.schedule.ScheduleController;
-import com.udacity.jdnd.course3.critter.schedule.ScheduleDTO;
-import com.udacity.jdnd.course3.critter.user.*;
+import com.udacity.jdnd.course3.critter.pet.controller.PetController;
+import com.udacity.jdnd.course3.critter.pet.controller.PetDTO;
+import com.udacity.jdnd.course3.critter.schedule.controller.ScheduleController;
+import com.udacity.jdnd.course3.critter.schedule.controller.ScheduleDTO;
+import com.udacity.jdnd.course3.critter.user.EmployeeSkill;
+import com.udacity.jdnd.course3.critter.user.controller.CustomerDTO;
+import com.udacity.jdnd.course3.critter.user.controller.EmployeeDTO;
+import com.udacity.jdnd.course3.critter.user.controller.EmployeeRequestDTO;
+import com.udacity.jdnd.course3.critter.user.controller.UserController;
 import org.junit.jupiter.api.Assertions;
 import org.junit.jupiter.api.Test;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -43,7 +47,7 @@ public class CritterFunctionalTest {
     private ScheduleController scheduleController;
 
     @Test
-    public void testCreateCustomer(){
+    public void testCreateCustomer() {
         CustomerDTO customerDTO = createCustomerDTO();
         CustomerDTO newCustomer = userController.saveCustomer(customerDTO);
         CustomerDTO retrievedCustomer = userController.getAllCustomers().get(0);
@@ -53,7 +57,7 @@ public class CritterFunctionalTest {
     }
 
     @Test
-    public void testCreateEmployee(){
+    public void testCreateEmployee() {
         EmployeeDTO employeeDTO = createEmployeeDTO();
         EmployeeDTO newEmployee = userController.saveEmployee(employeeDTO);
         EmployeeDTO retrievedEmployee = userController.getEmployee(newEmployee.getId());
@@ -182,7 +186,7 @@ public class CritterFunctionalTest {
         LocalDate date = LocalDate.of(2019, 12, 25);
         List<Long> petList = Lists.newArrayList(petDTO.getId());
         List<Long> employeeList = Lists.newArrayList(employeeDTO.getId());
-        Set<EmployeeSkill> skillSet =  Sets.newHashSet(EmployeeSkill.PETTING);
+        Set<EmployeeSkill> skillSet = Sets.newHashSet(EmployeeSkill.PETTING);
 
         scheduleController.createSchedule(createScheduleDTO(petList, employeeList, date, skillSet));
         ScheduleDTO scheduleDTO = scheduleController.getAllSchedules().get(0);
@@ -247,6 +251,7 @@ public class CritterFunctionalTest {
         employeeDTO.setSkills(Sets.newHashSet(EmployeeSkill.FEEDING, EmployeeSkill.PETTING));
         return employeeDTO;
     }
+
     private static CustomerDTO createCustomerDTO() {
         CustomerDTO customerDTO = new CustomerDTO();
         customerDTO.setName("TestEmployee");
@@ -279,19 +284,19 @@ public class CritterFunctionalTest {
 
     private ScheduleDTO populateSchedule(int numEmployees, int numPets, LocalDate date, Set<EmployeeSkill> activities) {
         List<Long> employeeIds = IntStream.range(0, numEmployees)
-                .mapToObj(i -> createEmployeeDTO())
-                .map(e -> {
-                    e.setSkills(activities);
-                    e.setDaysAvailable(Sets.newHashSet(date.getDayOfWeek()));
-                    return userController.saveEmployee(e).getId();
-                }).collect(Collectors.toList());
+            .mapToObj(i -> createEmployeeDTO())
+            .map(e -> {
+                e.setSkills(activities);
+                e.setDaysAvailable(Sets.newHashSet(date.getDayOfWeek()));
+                return userController.saveEmployee(e).getId();
+            }).collect(Collectors.toList());
         CustomerDTO cust = userController.saveCustomer(createCustomerDTO());
         List<Long> petIds = IntStream.range(0, numPets)
-                .mapToObj(i -> createPetDTO())
-                .map(p -> {
-                    p.setOwnerId(cust.getId());
-                    return petController.savePet(p).getId();
-                }).collect(Collectors.toList());
+            .mapToObj(i -> createPetDTO())
+            .map(p -> {
+                p.setOwnerId(cust.getId());
+                return petController.savePet(p).getId();
+            }).collect(Collectors.toList());
         return scheduleController.createSchedule(createScheduleDTO(petIds, employeeIds, date, activities));
     }
 
